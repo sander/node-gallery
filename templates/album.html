@@ -1,0 +1,28 @@
+<!doctype html>
+
+<title><%= album.title %></title>
+
+<meta charset=utf-8>
+
+<link rel=stylesheet href=../../static/gallery.css>
+
+<div class=header>
+  <div class=breadcrumbs>
+    <h2><a href=../..>Photo gallery</a></h2>
+    <h1><%= album.title %></h1>
+  </div>
+</div>
+
+<h1><%= album.title %></h1>
+
+<div class=details>
+  <p class=date>Created on <b><%= album.created %></b>
+  <p class=number><b><%= album.photos.length %></b> photos
+</div>
+
+<div class=photos>
+  <p>
+  <% album.photos.forEach(function(photo) { %>
+    <a href='<%= photo %>/' class=thumbnail><img src='<%= photo %>/thumbnail' alt='<%= photo %>'></a>
+  <% }) %>
+</div>

@@ -1,0 +1,32 @@
+<!doctype html>
+
+<title><%= photo %> - <%= album.title %></title>
+
+<meta charset=utf-8>
+
+<link rel=stylesheet href=../../../static/gallery.css>
+
+<div class=header>
+  <div class=breadcrumbs>
+    <h3><a href=../../..>Photo gallery</a></h3>
+    <h2><a href=..><%= album.title %></a></h2>
+    <h1><%= title %></h1>
+  </div>
+</div>
+
+<h1><%= album.title %></h1>
+
+<p class=nav>
+  <% if (previous) { %>
+    <a class='previous thumbnail' href='../<%= previous %>/'><img src='../<%= previous %>/thumbnail' alt='Previous photo'></a>
+  <% } else { %>
+    <a class='previous thumbnail-placeholder'></a>
+  <% } %>
+  <a class='current thumbnail'><img src='thumbnail' alt='Current photo'></a>
+  <% if (next) { %>
+    <a class='next thumbnail' href='../<%= next %>/'><img src='../<%= next %>/thumbnail' alt='Next photo'></a>
+  <% } else { %>
+    <a class='next thumbnail-placeholder'></a>
+  <% } %>
+
+<p class=display><a href=original><img src=display alt='<%= photo %>'></a>

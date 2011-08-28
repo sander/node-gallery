@@ -1,0 +1,29 @@
+<!doctype html>
+
+<title>Photo gallery</title>
+
+<meta charset=utf-8>
+
+<link rel=stylesheet href=static/gallery.css>
+
+<div class=header>
+  <h1>Photo gallery</h1>
+</div>
+
+<h1>Photo gallery</h1>
+
+<div class=albums>
+  <% albums.forEach(function(album) { %>
+    <a href='<%= album.url %>'>
+      <div class=album>
+        <p><img src='<%= album.preview %>'>
+        <h2><%= album.title %></h2>
+        <p class=date>Created on <b><%= album.created %></b>
+        <p class=number><b><%= album.photos.length %></b> photos
+        <% if (album.type == 'protected') { %>
+          <p class=protected>Password protected
+        <% } %>
+      </div>
+    </a>
+  <% }) %>
+</div>
