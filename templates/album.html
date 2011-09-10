@@ -7,6 +7,9 @@
 <link rel=stylesheet href=../../static/gallery.css>
 
 <div class=header>
+  <% if (authenticated) { %>
+    <p class=auth><a href=../../forget-passwords>Forget all passwords</a>
+  <% } %>
   <div class=breadcrumbs>
     <h2><a href=../..>Photo gallery</a></h2>
     <h1><%= album.title %></h1>
@@ -18,11 +21,18 @@
 <div class=details>
   <p class=date>Created on <b><%= album.created %></b>
   <p class=number><b><%= album.photos.length %></b> photos
+  <% if (album.type == 'protected') { %>
+    <p class=protected>Password protected
+  <% } %>
 </div>
 
-<div class=photos>
-  <p>
+<ul class=photos>
   <% album.photos.forEach(function(photo) { %>
-    <a href='<%= photo %>/' class=thumbnail><img src='<%= photo %>/thumbnail' alt='<%= photo %>'></a>
+    <li>
+      <a href='<%= photo %>/' class=thumbnail><img src='<%= photo %>/thumbnail' alt='<%= photo %>'></a>
   <% }) %>
+</ul>
+
+<div class=footer>
+  <p>created using <a href=https://github.com/sander/node-gallery>node-gallery</a> by <a href=//s89.nl/>s89</a>
 </div>

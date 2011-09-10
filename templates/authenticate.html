@@ -1,0 +1,32 @@
+<!doctype html>
+
+<title>Password required</title>
+
+<meta charset=utf-8>
+
+<link rel=stylesheet href=static/gallery.css>
+
+<div class=header>
+  <% if (authenticated) { %>
+    <p class=auth><a href=forget-passwords>Forget all passwords</a>
+  <% } %>
+  <div class=breadcrumbs>
+    <h2><a href=../..>Photo gallery</a></h2>
+    <h1><%= album.title %></h1>
+  </div>
+</div>
+
+<h1><%= album.title %></h1>
+
+<p>Please enter the password for this album to view its photos:
+<form method=post autocomplete=off>
+  <p><input name=password type=password autofocus>
+</form>
+
+<% if (wrong) { %>
+  <p class=error>Wrong password!
+<% } %>
+
+<div class=footer>
+  <p>created using <a href=https://github.com/sander/node-gallery>node-gallery</a> by <a href=//s89.nl/>s89</a>
+</div>

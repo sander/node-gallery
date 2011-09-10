@@ -81,7 +81,7 @@ body > h1 {
   float: left;
   width: 288px;
   height: 192px;
-  margin: 0 32px 32px 0;
+  margin: 0 8px 8px 0;
   background: #282b2c;
   color: #fff;
 }
@@ -110,9 +110,19 @@ body > h1 {
   display: box;
   display: -moz-box;
   display: -webkit-box;
+  box-pack: center;
+  -moz-box-pack: center;
+  -webkit-box-pack: center;
   box-align: center;
   -moz-box-align: center;
   -webkit-box-align: center;
+}
+.photos {
+  padding: 0;
+}
+.photos li {
+  display: block;
+  float: left;
 }
 
 .display {
@@ -146,29 +156,38 @@ body > h1 {
   float: right;
   margin-top: -128px;
   margin-right: -16px;
+  padding: 0;
+}
+.nav li {
+  display: block;
+  float: left;
+  width: 120px;
 }
 .nav a.current {
   opacity: .3;
 }
-.nav .previous:after, .nav .next:after {
+.nav .previous, .nav .next {
+  text-decoration: none;
+  width: 96px;
+}
+.nav .previous:before, .nav .next:before {
   position: absolute;
   color: #fff;
   font-weight: bold;
   font-size: 48px;
   text-shadow: #000 0 2px 4px;
-  margin-left: -16px;
   margin-top: 12px;
 }
-.nav .previous.thumbnail-placeholder:after, .nav .next.thumbnail-placeholder:after {
+.nav .previous.thumbnail-placeholder:before, .nav .next.thumbnail-placeholder:after {
   display: none;
 }
-.nav .previous:after {
+.nav .previous:before {
   content: '‹';
-  margin-left: -96px;
+  margin-right: -96px;
 }
-.nav .next:after {
+.nav .next:before {
   content: '›';
-  margin-left: -16px;
+  margin-left: 78px;
 }
 .nav .thumbnail-placeholder {
   display: none;
@@ -185,5 +204,39 @@ body > h1 {
 }
 .details b {
   font-weight: normal;
+  color: #000;
+}
+
+input[type=password] {
+  font-size: 18px;
+  padding: 4px;
+}
+
+.error {
+  font-weight: bold;
+  color: #bb0f0f;
+}
+
+.auth {
+  float: right;
+  width: auto;
+}
+.auth a {
+  color: #989b9e;
+}
+
+.footer {
+  clear: both;
+  font-size: 12px;
+  padding-top: 16px;
+  text-align: center;
+}
+.footer p {
+  margin: 0;
+}
+.footer, .footer a {
+  color: #989b9e;
+}
+.footer:hover, .footer:hover a {
   color: #000;
 }

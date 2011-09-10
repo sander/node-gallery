@@ -7,6 +7,9 @@
 <link rel=stylesheet href=static/gallery.css>
 
 <div class=header>
+  <% if (authenticated) { %>
+    <p class=auth><a href=forget-passwords>Forget all passwords</a>
+  <% } %>
   <h1>Photo gallery</h1>
 </div>
 
@@ -26,4 +29,8 @@
       </div>
     </a>
   <% }) %>
+</div>
+
+<div class=footer>
+  <p>created using <a href=https://github.com/sander/node-gallery>node-gallery</a> by <a href=//s89.nl/>s89</a>
 </div>

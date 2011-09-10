@@ -7,6 +7,9 @@
 <link rel=stylesheet href=../../../static/gallery.css>
 
 <div class=header>
+  <% if (authenticated) { %>
+    <p class=auth><a href=../../../forget-passwords>Forget all passwords</a>
+  <% } %>
   <div class=breadcrumbs>
     <h3><a href=../../..>Photo gallery</a></h3>
     <h2><a href=..><%= album.title %></a></h2>
@@ -16,17 +19,25 @@
 
 <h1><%= album.title %></h1>
 
-<p class=nav>
-  <% if (previous) { %>
-    <a class='previous thumbnail' href='../<%= previous %>/'><img src='../<%= previous %>/thumbnail' alt='Previous photo'></a>
-  <% } else { %>
-    <a class='previous thumbnail-placeholder'></a>
-  <% } %>
-  <a class='current thumbnail'><img src='thumbnail' alt='Current photo'></a>
-  <% if (next) { %>
-    <a class='next thumbnail' href='../<%= next %>/'><img src='../<%= next %>/thumbnail' alt='Next photo'></a>
-  <% } else { %>
-    <a class='next thumbnail-placeholder'></a>
-  <% } %>
+<ul class=nav>
+  <li>
+    <% if (previous) { %>
+      <a class='previous thumbnail' href='../<%= previous %>/'><img src='../<%= previous %>/thumbnail' alt='Previous photo'></a>
+    <% } else { %>
+      <a class='previous thumbnail-placeholder'></a>
+    <% } %>
+  <li>
+    <a class='current thumbnail'><img src='thumbnail' alt='Current photo'></a>
+  <li>
+    <% if (next) { %>
+      <a class='next thumbnail' href='../<%= next %>/'><img src='../<%= next %>/thumbnail' alt='Next photo'></a>
+    <% } else { %>
+      <a class='next thumbnail-placeholder'></a>
+    <% } %>
+</ul>
 
 <p class=display><a href=original><img src=display alt='<%= photo %>'></a>
+
+<div class=footer>
+  <p>created using <a href=https://github.com/sander/node-gallery>node-gallery</a> by <a href=//s89.nl/>s89</a>
+</div>
