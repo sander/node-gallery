@@ -1,0 +1,13 @@
+{
+  "name": "node-gallery",
+  "version": "0.0.1",
+  "description": "Photo gallery that uses the file system",
+  "author": "Sander Dijkhuis <mail@sanderdijkhuis.nl>",
+  "license": "MIT",
+  "repository": "git://github.com/sander/node-gallery",
+  "dependencies": {
+    "ejs": "0.6.1",
+    "express": "2.5.2",
+    "imagemagick": "0.1.2"
+  }
+}  

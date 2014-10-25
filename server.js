@@ -1,17 +1,18 @@
+var crypto = require('crypto');
 var ejs = require('ejs');
 var express = require('express');
 var fs = require('fs');
 var im = require('imagemagick');
 
-var ALBUM_DIR = __dirname + '/albums';
+var ALBUM_DIR = /*__dirname +*/ '/albums';
 var THUMBNAIL_SIZE = 96;
 var DISPLAY_SIZE = 640;
 var ALBUM_PREVIEW_WIDTH = 288;
 var ALBUM_PREVIEW_HEIGHT = 96;
-var PORT = 3002;
+var PORT = 8080;
 
 // Change and don't tell anyone
-var SECRET = '237ytr8o73ybo7rfta3287ta8f73oy987yn937t93';
+var SECRET = crypto.randomBytes(48).toString('hex');
 
 var app = express.createServer();
 app.use(express.bodyParser());
