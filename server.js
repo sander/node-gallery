@@ -11,7 +11,6 @@ var ALBUM_PREVIEW_WIDTH = 288;
 var ALBUM_PREVIEW_HEIGHT = 96;
 var PORT = 8080;
 
-// Change and don't tell anyone
 var SECRET = crypto.randomBytes(48).toString('hex');
 
 var app = express.createServer();
