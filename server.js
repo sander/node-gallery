@@ -4,12 +4,12 @@ var express = require('express');
 var fs = require('fs');
 var im = require('imagemagick');
 
-var ALBUM_DIR = /*__dirname +*/ '/albums';
+var ALBUM_DIR = process.env.NODE_GALLERY_DIR || '/albums';
 var THUMBNAIL_SIZE = 96;
 var DISPLAY_SIZE = 640;
 var ALBUM_PREVIEW_WIDTH = 288;
 var ALBUM_PREVIEW_HEIGHT = 96;
-var PORT = 8080;
+var PORT = process.env.NODE_GALLERY_PORT || 8080;
 
 var SECRET = crypto.randomBytes(48).toString('hex');
 
