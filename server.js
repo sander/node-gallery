@@ -10,6 +10,7 @@ var DISPLAY_SIZE = 640;
 var ALBUM_PREVIEW_WIDTH = 288;
 var ALBUM_PREVIEW_HEIGHT = 96;
 var PORT = process.env.NODE_GALLERY_PORT || 8080;
+var IP = process.env.NODE_GALLERY_IP || '::1';
 
 var SECRET = crypto.randomBytes(48).toString('hex');
 
@@ -343,4 +344,4 @@ app.get('/preview/:album', function(request, response) {
 
 app.use('/static', express.static(__dirname + '/static'));
 
-app.listen(PORT);
+app.listen(PORT, IP);
