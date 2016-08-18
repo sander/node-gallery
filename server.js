@@ -10,6 +10,7 @@ const ALBUM_DIR = process.env.NODE_GALLERY_DIR || 'example/albums';
 const STORAGE_DIR = process.env.NODE_GALLERY_STORAGE_DIR || 'example/data';
 const PORT = process.env.NODE_GALLERY_PORT || 8080;
 const IP = process.env.NODE_GALLERY_IP || '::1';
+const REFRESH_PASSWORD = process.env.REFRESH_PASSWORD || 'password';
 const THUMBNAIL_SIZE = 96;
 const DISPLAY_SIZE = 640;
 const ALBUM_PREVIEW_WIDTH = 288;
@@ -38,7 +39,7 @@ app.use(session({
   saveUninitialized: false
 }));
 
-const albums = {};
+let albums = {};
 
 function respond(request, response, templateName, locals) {
   const path = __dirname + '/templates/' + templateName + '.html';
@@ -143,6 +144,21 @@ app.get('/', (request, response) => {
   });
 
   respond(request, response, 'index', locals);
+});
+
+let refreshTimeout = null;
+app.get('/refresh', (request, response) => {
+  if (refreshTimeout !== null) {
+    response.send('wait');
+  } else if (request.query.password == REFRESH_PASSWORD) {
+    albums = {};
+    response.redirect('/');
+  } else {
+    refreshTimeout = setTimeout(() => {
+      response.send('incorrect password');
+      refreshTimeout = null;
+    }, 1000);
+  }
 });
 
 function checkAuthentication(request, response, album) {
