@@ -1,5 +1,5 @@
-data/secret
-data/sessions.db
-display/
-meta/preview.jpg
-thumbnails/
+/example/data/secret
+/example/data/sessions.db
+/example/albums/*/*/display
+/example/albums/*/*/meta/preview.jpg
+/example/albums/*/*/thumbnails
