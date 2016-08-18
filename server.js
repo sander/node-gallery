@@ -1,34 +1,53 @@
-var crypto = require('crypto');
-var ejs = require('ejs');
-var express = require('express');
-var fs = require('fs');
-var im = require('imagemagick');
+const bodyParser = require('body-parser');
+const ejs = require('ejs');
+const express = require('express');
+const fs = require('fs');
+const im = require('imagemagick');
+const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
 
-var ALBUM_DIR = process.env.NODE_GALLERY_DIR || '/albums';
-var THUMBNAIL_SIZE = 96;
-var DISPLAY_SIZE = 640;
-var ALBUM_PREVIEW_WIDTH = 288;
-var ALBUM_PREVIEW_HEIGHT = 96;
-var PORT = process.env.NODE_GALLERY_PORT || 8080;
-var IP = process.env.NODE_GALLERY_IP || '::1';
+const ALBUM_DIR = process.env.NODE_GALLERY_DIR || 'example/albums';
+const STORAGE_DIR = process.env.NODE_GALLERY_STORAGE_DIR || 'example/data';
+const PORT = process.env.NODE_GALLERY_PORT || 8080;
+const IP = process.env.NODE_GALLERY_IP || '::1';
+const THUMBNAIL_SIZE = 96;
+const DISPLAY_SIZE = 640;
+const ALBUM_PREVIEW_WIDTH = 288;
+const ALBUM_PREVIEW_HEIGHT = 96;
 
-var SECRET = crypto.randomBytes(48).toString('hex');
+const SECRET = (() => {
+  const path = STORAGE_DIR + '/secret';
+  try {
+    return fs.readFileSync(path, 'utf-8');
+  } catch (e) {
+    const s = require('crypto').randomBytes(48).toString('hex');
 
-var app = express.createServer();
-app.use(express.bodyParser());
-app.use(express.cookieParser());
-app.use(express.session({ secret: SECRET }));
+    fs.writeFileSync(path, s);
 
-var albums = {};
+    return s;
+  }
+})();
+
+const app = express();
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(session({
+  secret: SECRET,
+  store: new SQLiteStore({ dir: STORAGE_DIR }),
+  resave: false,
+  saveUninitialized: false
+}));
+
+const albums = {};
 
 function respond(request, response, templateName, locals) {
+  const path = __dirname + '/templates/' + templateName + '.html';
+
   locals.authenticated = !!request.session.passwords;
 
-  var template = fs.readFileSync(
-    __dirname + '/templates/' + templateName + '.html', 'utf8');
-  var body = ejs.render(template, { locals: locals });
-
-  response.send(body);
+  ejs.renderFile(path, locals, (err, str) => {
+    response.send(str);
+  });
 }
 
 function directoryExists(path) {
@@ -46,7 +65,7 @@ function ensureDirectory(path) {
 }
 
 function formatDate(date) {
-  var s = '';
+  let s = '';
   if (date.getMonth() + 1 < 10) s += '0';
   s += date.getMonth() + '/';
   if (date.getDate() < 10) s += '0';
@@ -57,9 +76,8 @@ function formatDate(date) {
 function getAlbumInfo(name, type) {
   if (albums[name]) return albums[name];
 
-  var info = {
+  const info = {
     title: name,
-    photos: [],
     url: 'album/' + name + '/',
     preview: 'preview/' + name 
   };
@@ -68,8 +86,8 @@ function getAlbumInfo(name, type) {
     info.directory = ALBUM_DIR + '/' + type + '/' + name;
     info.type = type;
   } else {
-    ['public', 'protected', 'private', 'hidden'].forEach(function(type) {
-      var candidate = ALBUM_DIR + '/' + type + '/' + name;
+    ['public', 'protected', 'private', 'hidden'].forEach((type) => {
+      const candidate = ALBUM_DIR + '/' + type + '/' + name;
       if (directoryExists(candidate)) {
         info.directory = candidate;
         info.type = type;
@@ -87,19 +105,17 @@ function getAlbumInfo(name, type) {
   ensureDirectory(info.directory + '/meta');
 
   if (info.type == 'protected' || info.type == 'private') {
-    var passwordPath = info.directory + '/meta/password';
+    const passwordPath = info.directory + '/meta/password';
     if (exists(passwordPath))
       info.password = fs.readFileSync(passwordPath, 'utf8').trim();
   }
 
-  fs.readdirSync(info.directory).forEach(function(file) {
-    if (file == 'meta') {
-    } else if (file == 'display') {
-    } else if (file == 'thumbnails') {
-    } else info.photos.push(file);
-  });
+  const ignore = new Set(['meta', 'display', 'thumbnails', '.DS_Store']);
 
-  info.photos.sort(function(a, b) {
+  info.photos = fs.readdirSync(info.directory).filter(file => !ignore.has(file));
+  console.log('photos', info.photos);
+
+  info.photos.sort((a, b) => {
     if (a > b) return 1;
     else return -1;
   });
@@ -109,18 +125,19 @@ function getAlbumInfo(name, type) {
   return info;
 }
 
-app.get('/', function(request, response) {
-  var locals = {
+app.get('/', (request, response) => {
+  const locals = {
     albums: []
   };
 
-  ['public', 'protected'].forEach(function(type) {
-    fs.readdirSync(ALBUM_DIR + '/' + type).forEach(function(file) {
-      locals.albums.push(getAlbumInfo(file, type));
+  ['public', 'protected'].forEach((type) => {
+    fs.readdirSync(ALBUM_DIR + '/' + type).forEach((file) => {
+      if (file != '.DS_Store')
+        locals.albums.push(getAlbumInfo(file, type));
     });
   });
 
-  locals.albums.sort(function(a, b) {
+  locals.albums.sort((a, b) => {
     if (a.createdRaw < b.createdRaw) return 1;
     else return -1;
   });
@@ -140,15 +157,15 @@ function checkAuthentication(request, response, album) {
   return false;
 }
 
-app.get('/forget-passwords', function(request, response) {
+app.get('/forget-passwords', (request, response) => {
   delete request.session.passwords;
   response.redirect('/');
 });
 
-app.get('/authenticate', function(request, response) {
-  var album = getAlbumInfo(request.query.album);
+app.get('/authenticate', (request, response) => {
+  const album = getAlbumInfo(request.query.album);
 
-  var locals = {
+  const locals = {
     album: album,
     redirect: request.query.redirect,
     wrong: !!request.query.wrong
@@ -157,9 +174,9 @@ app.get('/authenticate', function(request, response) {
   respond(request, response, 'authenticate', locals);
 });
 
-app.post('/authenticate', function(request, response) {
-  var password = request.body.password;
-  var album = getAlbumInfo(request.query.album);
+app.post('/authenticate', (request, response) => {
+  const password = request.body.password;
+  const album = getAlbumInfo(request.query.album);
 
   if (album.password == password) {
     if (!request.session.passwords) request.session.passwords = {};
@@ -170,24 +187,24 @@ app.post('/authenticate', function(request, response) {
   }
 });
 
-app.get('/album/:album/', function(request, response) {
-  var album = getAlbumInfo(request.params.album);
+app.get('/album/:album/', (request, response) => {
+  const album = getAlbumInfo(request.params.album);
 
   if (!checkAuthentication(request, response, album)) return;
 
-  var locals = {
+  const locals = {
     album: album,
   };
 
   respond(request, response, 'album', locals);
 });
 
-app.get('/album/:album/:photo/', function(request, response) {
-  var album = getAlbumInfo(request.params.album);
+app.get('/album/:album/:photo/', (request, response) => {
+  const album = getAlbumInfo(request.params.album);
 
   if (!checkAuthentication(request, response, album)) return;
 
-  var locals = {
+  const locals = {
     album: album,
     photo: request.params.photo,
     title: request.params.photo.replace(/\.(JPG|jpg|jpeg)/, ''),
@@ -195,7 +212,7 @@ app.get('/album/:album/:photo/', function(request, response) {
     next: null
   };
 
-  var index = locals.album.photos.indexOf(locals.photo);
+  const index = locals.album.photos.indexOf(locals.photo);
   if (index != 0)
     locals.previous = locals.album.photos[index - 1];
   if (index != locals.album.photos.length - 1)
@@ -205,7 +222,7 @@ app.get('/album/:album/:photo/', function(request, response) {
 });
 
 function sendFile(request, response, path) {
-  fs.stat(path, function(error, stat) {
+  fs.stat(path, (error, stat) => {
     response.setHeader('Content-Length', stat.size);
     response.setHeader('Content-Type', 'image/jpeg');
     response.setHeader(
@@ -220,8 +237,8 @@ function sendFile(request, response, path) {
   });
 }
 
-var resizes = [];
-var resizing = false;
+const resizes = [];
+let resizing = false;
 function queueResize(options, callback) {
   console.log('queueing resize: ' + options.dstPath);
   resizes.push({
@@ -232,9 +249,9 @@ function queueResize(options, callback) {
 }
 function resize() {
   resizing = true;
-  var entry = resizes.pop();
+  const entry = resizes.pop();
   console.log('starting resize: ' + entry.options.dstPath);
-  im.resize(entry.options, function(error, stdout, stderr) {
+  im.resize(entry.options, (error, stdout, stderr) => {
     entry.callback(error, stdout, stderr);
 
     console.log('resized: ' + entry.options.dstPath);
@@ -244,20 +261,24 @@ function resize() {
 }
 
 function sendResizedPhoto(request, response, type) {
-  var album = getAlbumInfo(request.params.album);
+  const album = getAlbumInfo(request.params.album);
 
   if (!checkAuthentication(request, response, album)) return;
 
+  let subdir;
+  let size;
+  let strip;
+
   if (type == 'thumbnail') {
-    var subdir = 'thumbnails';
-    var size = THUMBNAIL_SIZE;
-    var strip = true;
+    subdir = 'thumbnails';
+    size = THUMBNAIL_SIZE;
+    strip = true;
   } else if (type == 'display') {
-    var subdir = 'display';
-    var size = DISPLAY_SIZE;
-    var strip = false;
+    subdir = 'display';
+    size = DISPLAY_SIZE;
+    strip = false;
   }
-  var path = album.directory + '/' + subdir + '/' + request.params.photo;
+  const path = album.directory + '/' + subdir + '/' + request.params.photo;
 
   if (!exists(path)) {
     queueResize({
@@ -266,7 +287,7 @@ function sendResizedPhoto(request, response, type) {
       width: size,
       height: size,
       strip: strip
-    }, function(error, stdout, stderr) {
+    }, (error, stdout, stderr) => {
       if (!error) {
         sendFile(request, response, path);
       }
@@ -276,42 +297,42 @@ function sendResizedPhoto(request, response, type) {
   }
 }
 
-app.get('/album/:album/:photo/original', function(request, response) {
-  var album = getAlbumInfo(request.params.album);
+app.get('/album/:album/:photo/original', (request, response) => {
+  const album = getAlbumInfo(request.params.album);
 
   if (!checkAuthentication(request, response, album)) return;
 
-  var path = album.directory + '/' + request.params.photo;
+  const path = album.directory + '/' + request.params.photo;
   sendFile(request, response, path);
 });
 
-app.get('/album/:album/:photo/display', function(request, response) {
+app.get('/album/:album/:photo/display', (request, response) => {
   sendResizedPhoto(request, response, 'display');
 });
 
-app.get('/album/:album/:photo/thumbnail', function(request, response) {
+app.get('/album/:album/:photo/thumbnail', (request, response) => {
   sendResizedPhoto(request, response, 'thumbnail');
 });
 
-app.get('/preview/:album', function(request, response) {
-  var album = getAlbumInfo(request.params.album);
+app.get('/preview/:album', (request, response) => {
+  const album = getAlbumInfo(request.params.album);
 
   // No authentication check here, because we want to show these previews.
 
-  var path = album.directory + '/meta/preview.jpg';
+  const path = album.directory + '/meta/preview.jpg';
 
   if (album.photos.length == 0)
     return response.end()
 
   if (!exists(path)) {
-    var imagePath = album.directory + '/' +
+    const imagePath = album.directory + '/' +
       album.photos[Math.floor(Math.random() * album.photos.length)];
     im.resize({
       srcPath: imagePath,
       dstPath: path,
       width: ALBUM_PREVIEW_WIDTH,
       strip: true
-    }, function(error, stdout, stderr) {
+    }, (error, stdout, stderr) => {
       im.convert([
         path,
         '-crop',
@@ -320,7 +341,7 @@ app.get('/preview/:album', function(request, response) {
         'center',
         '+repage',
         path
-      ], function(error, metadata) {
+      ], (error, metadata) => {
         if (!error) sendFile(request, response, path);
         else console.log(error);
       });
@@ -332,7 +353,7 @@ app.get('/preview/:album', function(request, response) {
         width: ALBUM_PREVIEW_WIDTH,
         height: ALBUM_PREVIEW_HEIGHT,
         strip: true
-      }, function(error, stdout, stderr) {
+      }, (error, stdout, stderr) => {
         if (!error) sendFile(request, response, path);
       });
       */

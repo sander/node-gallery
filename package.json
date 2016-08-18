@@ -1,13 +1,16 @@
 {
   "name": "node-gallery",
-  "version": "0.0.1",
+  "version": "1.1.0",
   "description": "Photo gallery that uses the file system",
   "author": "Sander Dijkhuis <mail@sanderdijkhuis.nl>",
   "license": "MIT",
   "repository": "git://github.com/sander/node-gallery",
   "dependencies": {
-    "ejs": "0.6.1",
-    "express": "2.5.2",
-    "imagemagick": "0.1.2"
+    "body-parser": "^1.15.2",
+    "connect-sqlite3": "^0.9.8",
+    "ejs": "2.5.1",
+    "express": "4.14.0",
+    "express-session": "^1.14.0",
+    "imagemagick": "0.1.3"
   }
-}  
+}
