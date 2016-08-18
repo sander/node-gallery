@@ -238,6 +238,11 @@ app.get('/album/:album/:photo/', (request, response) => {
 });
 
 function sendFile(request, response, path) {
+  response.setHeader('X-Accel-Redirect', '/internal' + path.substr(ALBUM_DIR.length));
+  response.setHeader('X-Accel-Buffering', 'no');
+
+  if (request.method == 'HEAD') return response.end();
+
   fs.stat(path, (error, stat) => {
     response.setHeader('Content-Length', stat.size);
     response.setHeader('Content-Type', 'image/jpeg');
@@ -246,8 +251,6 @@ function sendFile(request, response, path) {
     response.setHeader('Last-Modified', stat.mtime.toUTCString());
     response.setHeader(
       'ETag', '"' + stat.size + '-' + Number(stat.mtime) + '"');
-
-    if (request.method == 'HEAD') return response.end();
 
     fs.createReadStream(path).pipe(response);
   });
